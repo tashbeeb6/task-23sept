@@ -15,6 +15,7 @@ class Appointment extends Model
         'status',
         'booking_date',
         'booking_time',
+          'reminder_sent_at',
     ];
 
     public function service(): BelongsTo

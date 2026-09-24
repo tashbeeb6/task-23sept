@@ -22,9 +22,10 @@ class AppointmentController extends Controller
         $appointment = $this->appointment_repository->getAll();
     } else {
         $appointment = $this->appointment_repository->getByCustomer(auth()->id());
-    }
+        
+    }    $notifications = auth()->user()->notifications;
 
-    return view('dashboard', compact('appointment'));
+    return view('dashboard', compact('appointment','notifications'));
 
     }
 
@@ -38,11 +39,10 @@ class AppointmentController extends Controller
 
     public function store(StoreAppointmentRequest $request)
     {
-      $data = $request->all();
-       $data['customer_id'] = auth()->id();
-       $this->appointment_repository->create(
-            $data
-        );
+        $data = $request->all();
+        $data['customer_id'] = auth()->id();
+        // Status will use DB default = 'pending'. Admin confirms via edit form.
+        $this->appointment_repository->create($data);
 
         return redirect()->route('dashboard');
     }
