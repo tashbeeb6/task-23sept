@@ -7,7 +7,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Jobs\SendAppointmentReminder;
-class AppointmentReminder extends Notification
+use Illuminate\Support\Facades\Broadcast;
+
+use function Laravel\Prompts\title;
+
+class AppointmentReminder extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -26,7 +30,7 @@ class AppointmentReminder extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'Broadcast'];
     }
 
     /**
@@ -44,14 +48,17 @@ class AppointmentReminder extends Notification
      * Get the array representation of the notification.
      *
      * @return array<string, mixed>
-     */
+     */ 
     public function toArray(object $notifiable): array
     {
+        $locale =$notifiable->preferred_language ?? 'en';
         return [
-            'appointment_id' => $this->appointment->id,
-            'message'        => 'Your appointment is coming up soon!',
+            'title'=> __('reminder.title',[],$locale),
+         
+             'appointment_id' => $this->appointment->id,
+               'message'=> __('reminder.message',[],$locale),
             'booking_date'   => $this->appointment->booking_date,
-            'booking_time'   => $this->appointment->booking_time,
+            'booking_time'   => $this->appointment->booking_time, 
             'service_id'     => $this->appointment->service_id,
             'provider_id'    => $this->appointment->provider_id,
             

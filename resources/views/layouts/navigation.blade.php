@@ -52,15 +52,18 @@
             </svg>
 
          
-            @if(auth()->user()->unreadNotifications->count() > 0)
-                <span class="absolute -top-1 -right-1
-                             bg-red-500 text-white
-                             text-xs rounded-full
-                             h-5 w-5 flex items-center
-                             justify-center">
-                    {{ auth()->user()->unreadNotifications->count() }}
-                </span>
-            @endif
+          
+               <span
+    id="notification-count"
+    class="absolute -top-1 -right-1
+           bg-red-500 text-white
+           text-xs rounded-full
+           h-5 w-5 flex items-center justify-center
+           {{ auth()->user()->unreadNotifications->count() === 0 ? 'hidden' : '' }}"
+>
+    {{ auth()->user()->unreadNotifications->count() }}
+</span>
+          
 
         </button>
 
@@ -78,7 +81,7 @@
                 </h3>
             </div>
 
-            <div class="max-h-80 overflow-y-auto">
+            <div id="notification-list" class="max-h-80 overflow-y-auto">
 
                 @forelse(auth()->user()->notifications as $notification)
 
@@ -208,3 +211,53 @@
         </div>
     </div>
 </nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        window.Echo.private('App.Models.User.{{ auth()->id() }}')
+            .notification((notification) => {
+
+                console.log('REMINDER RECEIVED:', notification);
+
+          
+                const countElement =
+                    document.getElementById('notification-count');
+
+                let count = parseInt(countElement.innerText) || 0;
+
+                count++;
+
+                countElement.innerText = count;
+                countElement.classList.remove('hidden');
+
+
+              
+                const list =
+                    document.getElementById('notification-list');
+
+                const item = document.createElement('div');
+
+                item.className =
+                    'px-4 py-3 border-b hover:bg-gray-50 bg-blue-50';
+
+                item.innerHTML = `
+                    <p class="font-semibold text-sm">
+                        ${notification.title}
+                    </p>
+
+                    <p class="text-sm text-gray-600">
+                        ${notification.message}
+                    </p>
+
+                    <p class="text-xs text-gray-500 mt-1">
+                        ${notification.booking_date}
+                        at
+                        ${notification.booking_time}
+                    </p>
+                `;
+
+                list.prepend(item);
+            });
+
+    });
+</script>
